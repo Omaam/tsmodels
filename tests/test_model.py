@@ -1,13 +1,14 @@
 """Test for model module.
 """
 import matplotlib.pyplot as plt
-import model
+
+import tsmodels
 
 ar_coefs = [1.55, -0.81]
 
 
 def test_armodel():
-    armodel = model.ARModel(ar_coefs)
+    armodel = tsmodels.ARModel(ar_coefs)
 
     # freqs = np.linspace(0, 0.5, 1000)
     # powers = armodel.compute_power_spectrum(freqs)

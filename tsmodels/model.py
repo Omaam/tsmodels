@@ -19,14 +19,18 @@ class ARModel:
     def compute_auto_covariance_function(self, num_lags=50):
         pass
 
-    def compute_impulse_response_function(self, num_lags=50):
-        irf = np.zeros(num_lags + 1)
+    def compute_impulse_response_function(self, num_lags=50) -> list:
+        pad_width = num_lags - self.num_coef
+        ar_coef = np.pad(self.coefs, (0, pad_width))
+        irf = []
         for i in range(num_lags + 1):
             if i == 0:
-                irf[i] = 1
+                irf.append(1.0)
                 continue
-            g_i = np.convolve(self.coefs[:i], irf[:i], "same")
-            irf[i] = g_i[i-1]
+            g_i = 0.0
+            for j in range(1, i+1, 1):
+                g_i += ar_coef[j-1] * irf[i-j]
+            irf.append(g_i)
         return irf
 
     def compute_parcor(self, num_lags=50):
