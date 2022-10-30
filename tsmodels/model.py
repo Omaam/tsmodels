@@ -38,7 +38,8 @@ class ARModel:
 
     def compute_power_spectrum(self, freqs: ArrayLike):
         js = np.arange(1, self.num_coef+1, 1)
-        coef_fourier = self.coefs * np.exp(-2j * np.pi * freqs[:, None] * js)
-        ar_part = np.abs(1 - np.sum(coef_fourier, axis=1))**2
+        ar_coef_fourier = self.coefs * np.exp(
+            -2j * np.pi * freqs[:, None] * js)
+        ar_part = np.abs(1 - np.sum(ar_coef_fourier, axis=1))**2
         powers = 1 / ar_part
         return powers
