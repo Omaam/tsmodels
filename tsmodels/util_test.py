@@ -31,6 +31,12 @@ class TestUtil(unittest.TestCase):
                   [-0.5/3, 0.5/3,  0.5/3], ]
         self.assertTrue(np.array_equal(actual, expect))
 
+    def test_compute_lowerorder_arcoef(self):
+        arcoefs = np.array([0.2, 0.4, -0.1])
+        actual = util.compute_lowerorder_arcoef(arcoefs)
+        expect = [[0.16/0.99, 0.38/0.99], [(16/99+38/99*16/99)/(1-(38/99)**2)]]
+        self.assertListEqual(actual, expect)
+
     def _create_testcase_00(self):
         self.num_cov_element = 3
         self.x = np.array([1, 2, 3])

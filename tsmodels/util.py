@@ -51,3 +51,36 @@ def compute_crosscovariance_matrix(a1: np.ndarray, a2: np.ndarray,
     covs = compute_crosscovariance_funciton(a1, a2, num)
     cov_matrix = compute_covariance_matrix_from_covariances(covs)
     return cov_matrix
+
+
+def compute_lowerorder_arcoef(arcoefs: np.ndarray) -> np.ndarray:
+    """Compute AR coefficients for lower order AR models.
+
+    Returns
+        * arcoef_matrix:
+            AR coefficients matrix whose shape is (m-1, m-1).
+            (i, j) represents a^j_i.
+    """
+
+    arcoefs_list = []
+
+    def estimate_arcoef_recursive(c):
+        c_next = (c[:-1] + c[-1] * c[-2::-1]) / (1 - c[-1]**2)
+        if len(c) == 1:
+            return
+        arcoefs_list.append(list(c_next))
+        estimate_arcoef_recursive(c_next)
+
+    estimate_arcoef_recursive(arcoefs)
+    return arcoefs_list
+
+
+def compute_parcor(arcoefs: np.ndarray) -> np.ndarray:
+    """Compute PARCOR from AR model coefficients.
+
+    Returns
+        * parcor: PARCOR(partial autocorrelation coefficient)
+    """
+    arcoef_matrix = compute_lowerorder_arcoef(arcoefs)
+    parcor = np.diag(arcoef_matrix)
+    return parcor
