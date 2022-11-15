@@ -12,9 +12,10 @@ class ARModel:
         * num_coef: int
             Number of AR model coefficients.
     """
-    def __init__(self, ar_coefficients: ArrayLike):
+    def __init__(self, ar_coefficients: ArrayLike, variance: float):
         self.coefs = np.asarray(ar_coefficients)
         self.num_coef = self.coefs.size
+        self.variance = variance
 
     def compute_auto_covariance_function(self, num_lags=50):
         pass
@@ -41,5 +42,5 @@ class ARModel:
         ar_coef_fourier = self.coefs * np.exp(
             -2j * np.pi * freqs[:, None] * js)
         ar_part = np.abs(1 - np.sum(ar_coef_fourier, axis=1))**2
-        powers = 1 / ar_part
+        powers = self.variance / ar_part
         return powers
