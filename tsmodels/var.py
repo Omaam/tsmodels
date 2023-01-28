@@ -20,29 +20,24 @@ class VARAnalyzer:
 
         phases = -2j * np.pi * freqs[:, None] * np.arange(self.arorder + 1)
         arcoef_fourier = arcoef_a0 * np.exp(phases)[:, :, None, None]
-
         arcoef_fourier = arcoef_fourier.sum(axis=1)
 
         self.arcoef_fourier = arcoef_fourier
-        self.arcoef_fourier_inv = np.linalg.inv(arcoef_fourier)
+        return arcoef_fourier
 
     def compute_cross_spectrum(self, freqs=None):
         if freqs is None:
             freq_edges = np.linspace(0, 0.5, 101, endpoint=True)
             freqs = (freq_edges[1:] + freq_edges[:-1]) / 2
-        self.freqs = freqs
+        self.freqs = freqs = np.asarray(freqs)
 
-        self.compute_arcoef_fourier(freqs)
+        arcoef_fourier = self.compute_arcoef_fourier(freqs)
+        arcoef_fourier_inv = np.linalg.inv(arcoef_fourier)
+        arcoef_fourier_inv_conjugate = np.conjugate(np.transpose(
+            arcoef_fourier_inv, axes=[0, 2, 1]))
 
-        arcoef_fourier_inv_conjugate = np.empty(
-            (len(freqs), *self.arcoef.shape[1:]),
-            dtype=np.complex128)
-        for i in range(len(freqs)):
-            arcoef_fourier_inv_conjugate[i] = np.matrix(
-                self.arcoef_fourier_inv[i]).getH()
-
-        cross_spectrum = self.arcoef_fourier_inv
-        cross_spectrum = cross_spectrum @ self.obs_noise_matrix
+        cross_spectrum = arcoef_fourier_inv
+        cross_spectrum = arcoef_fourier_inv @ self.obs_noise_matrix
         cross_spectrum = cross_spectrum @ arcoef_fourier_inv_conjugate
         self.cross_spectrum = cross_spectrum
 
@@ -59,11 +54,6 @@ class VARAnalyzer:
 
     @property
     def coherency(self):
-        """Coherency.
-
-        TODO:
-            * This DON'T work well. Must be repaired.
-        """
         self._check_computation_crossspectrum()
 
         alpha_jk = self.amplitude_spectrum**2
@@ -88,16 +78,23 @@ def main():
 
     np.random.seed(0)
     arcoef = np.random.normal(0, 1, (8, 3, 3))
-    obs_noise_matrix = np.diag(np.random.normal(0, 1, 3))
+    obs_noise_matrix = np.diag(np.random.normal(0, 0.1, 3))
+    arcoef = np.array(
+        [[[0.4, 0.4],
+          [0.1, 0.2]]]
+    )
+    obs_noise_matrix = np.diag([0.1, 0.1])
     var = VARAnalyzer(arcoef, obs_noise_matrix)
     var.compute_cross_spectrum()
+
     freqs = var.freqs
     amp_specs = var.amplitude_spectrum
     phase_specs = var.phase_spectrum
 
-    fig, axes = plt.subplots(3, 3, sharex=True)
-    for i in range(3):
-        for j in range(3):
+    num_ts = 2
+    fig, axes = plt.subplots(num_ts, num_ts, sharex=True)
+    for i in range(num_ts):
+        for j in range(num_ts):
             if i >= j:
                 axes[i, j].plot(freqs, amp_specs[:, i, j])
             else:
@@ -106,12 +103,12 @@ def main():
     # plt.show()
     plt.close()
 
-    coherency = var.coherency
-    fig, axes = plt.subplots(3, 3, sharex=True)
-    for i in range(3):
-        for j in range(3):
+    coh = var.coherency
+    fig, axes = plt.subplots(num_ts, num_ts, sharex=True)
+    for i in range(num_ts):
+        for j in range(num_ts):
             if i >= j:
-                axes[i, j].plot(freqs, coherency[:, i, j])
+                axes[i, j].plot(freqs, coh[:, i, j])
             else:
                 axes[i, j].remove()
     plt.tight_layout()
