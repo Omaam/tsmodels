@@ -1,3 +1,4 @@
 """Initializing module.
 """
-from tsmodels.model import *
+from tsmodels.ar import *
+from tsmodels.var import *
