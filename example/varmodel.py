@@ -10,16 +10,13 @@ from tsmodels import VARAnalyzer
 
 def example():
 
-    np.random.seed(0)
-    arcoef = np.random.normal(0, 1, (8, 3, 3))
-    obs_noise_matrix = np.diag(np.random.normal(0, 0.1, 3))
     arcoef = np.array(
         [[[0.4, 0.4],
-          [0.1, 0.2]]]
+          [0.1, 0.4]]]
     )
-    obs_noise_matrix = np.diag([0.1, 0.1])
+    sigma2 = [0.1, 0.1]
 
-    varprocess = VARProcess(arcoef, None, obs_noise_matrix)
+    varprocess = VARProcess(arcoef, None, np.diag(sigma2))
     ts_sim = varprocess.simulate_var(100)
     fig, ax = plt.subplots(2, sharex="col", figsize=(8, 5))
     ax[0].plot(ts_sim[:, 0])
@@ -28,7 +25,7 @@ def example():
     plt.show()
     plt.close()
 
-    var = VARAnalyzer(arcoef, obs_noise_matrix)
+    var = VARAnalyzer(arcoef, sigma2)
     var.compute_cross_spectrum()
 
     freqs = var.freqs
@@ -53,10 +50,26 @@ def example():
     for i in range(num_ts):
         for j in range(num_ts):
             axes[i, j].set_xscale("log")
-            if i >= j:
+            if i <= j:
                 axes[i, j].plot(freqs, coh[:, i, j])
+                if i != j:
+                    axes[i, j].set_ylim(-3.15, 3.15)
             else:
                 axes[i, j].remove()
+    plt.tight_layout()
+    plt.show()
+    plt.close()
+
+    decomp_pspec = var.decomposed_powerspectrum
+    rel_pcontrib = var.relative_power_contribution
+    fig, axes = plt.subplots(num_ts, 2, sharex=True)
+    for i in range(num_ts):
+        for j in range(num_ts):
+            axes[i, 0].plot(freqs, decomp_pspec[:, i, j])
+            axes[j, 1].plot(freqs, rel_pcontrib[:, i, j])
+        axes[i, 0].set_xscale("log")
+        axes[i, 1].set_xscale("log")
+        axes[i, 1].set_ylim(0, 1)
     plt.tight_layout()
     plt.show()
     plt.close()
