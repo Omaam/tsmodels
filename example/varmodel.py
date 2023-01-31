@@ -22,7 +22,7 @@ def example():
     ax[0].plot(ts_sim[:, 0])
     ax[1].plot(ts_sim[:, 1])
     plt.tight_layout()
-    plt.show()
+    # plt.show()
     plt.close()
 
     var = VARAnalyzer(arcoef, np.diag(sigma2))
@@ -42,7 +42,7 @@ def example():
             else:
                 axes[i, j].plot(freqs, phase_specs[:, i, j])
     plt.tight_layout()
-    plt.show()
+    # plt.show()
     plt.close()
 
     coh = var.coherency
@@ -57,16 +57,19 @@ def example():
             else:
                 axes[i, j].remove()
     plt.tight_layout()
-    plt.show()
+    # plt.show()
     plt.close()
 
     decomp_pspec = var.decomposed_powerspectrum
     rel_pcontrib = var.relative_power_contribution
+    print(decomp_pspec[0])
+    print(var.power_spectrum[:, :, None].shape)
+    print(rel_pcontrib[0])
     fig, axes = plt.subplots(num_ts, 2, sharex=True)
     for i in range(num_ts):
         for j in range(num_ts):
             axes[i, 0].plot(freqs, decomp_pspec[:, i, j])
-            axes[j, 1].plot(freqs, rel_pcontrib[:, i, j])
+            axes[i, 1].plot(freqs, rel_pcontrib[:, i, j])
         axes[i, 0].set_xscale("log")
         axes[i, 1].set_xscale("log")
         axes[i, 1].set_ylim(0, 1)

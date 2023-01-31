@@ -79,9 +79,8 @@ class VARAnalyzer:
     def relative_power_contribution(self):
         self._check_computation_crossspectrum()
         decomp_pspec = self.decomposed_powerspectrum
-        power_spectra = self.power_spectrum
-        rel_pcontrib = np.cumsum(decomp_pspec, axis=2) / np.transpose(
-            power_spectra[:, None, :], axes=[0, 2, 1])
+        rel_pcontrib = np.cumsum(decomp_pspec, axis=2)
+        rel_pcontrib = rel_pcontrib / self.power_spectrum[:, :, None]
         return rel_pcontrib
 
     @property
