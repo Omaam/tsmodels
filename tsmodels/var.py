@@ -4,12 +4,12 @@ import numpy as np
 
 
 class VARAnalyzer:
-    def __init__(self, arcoef, sigma2):
+    def __init__(self, arcoef, W):
         self.arcoef = np.array(arcoef)
         self.arorder = arcoef.shape[0]
         self.num_ts = arcoef.shape[1]
 
-        self.W = np.diag(sigma2)
+        self.W = W
         self.P = None
 
     def compute_cross_spectrum(self, freqs=None):
@@ -79,11 +79,18 @@ class VARAnalyzer:
     def relative_power_contribution(self):
         self._check_computation_crossspectrum()
         decomp_pspec = self.decomposed_powerspectrum
-        rel_pcontrib = np.cumsum(decomp_pspec, axis=1) / np.sum(
-                decomp_pspec, axis=1, keepdims=True)
+        power_spectra = self.power_spectrum
+        rel_pcontrib = np.cumsum(decomp_pspec, axis=2) / np.transpose(
+            power_spectra[:, None, :], axes=[0, 2, 1])
         return rel_pcontrib
 
     @property
     def phase_spectrum(self):
         self._check_computation_crossspectrum()
         return np.angle(self.P)
+
+    @property
+    def power_spectrum(self):
+        self._check_computation_crossspectrum()
+        power_spectra = self.decomposed_powerspectrum.sum(axis=2)
+        return power_spectra

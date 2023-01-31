@@ -25,7 +25,7 @@ def example():
     plt.show()
     plt.close()
 
-    var = VARAnalyzer(arcoef, sigma2)
+    var = VARAnalyzer(arcoef, np.diag(sigma2))
     var.compute_cross_spectrum()
 
     freqs = var.freqs
