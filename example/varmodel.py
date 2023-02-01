@@ -26,11 +26,11 @@ def example():
     plt.close()
 
     var = VARAnalyzer(arcoef, np.diag(sigma2))
-    var.compute_cross_spectrum()
+    var.compute_cross_spectra()
 
     freqs = var.freqs
-    amp_specs = var.amplitude_spectrum
-    phase_specs = var.phase_spectrum
+    amp_specs = var.amplitude_spectra
+    phase_specs = var.phase_spectra
 
     num_ts = 2
     fig, axes = plt.subplots(num_ts, num_ts, sharex=True)
@@ -60,16 +60,15 @@ def example():
     # plt.show()
     plt.close()
 
-    decomp_pspec = var.decomposed_powerspectrum
+    decomp_pspec = var.decomposed_powerspectra
     rel_pcontrib = var.relative_power_contribution
-    print(decomp_pspec[0])
-    print(var.power_spectrum[:, :, None].shape)
-    print(rel_pcontrib[0])
     fig, axes = plt.subplots(num_ts, 2, sharex=True)
     for i in range(num_ts):
         for j in range(num_ts):
             axes[i, 0].plot(freqs, decomp_pspec[:, i, j])
-            axes[i, 1].plot(freqs, rel_pcontrib[:, i, j])
+            under = 0 if j == 0 else rel_pcontrib[:, i, j - 1]
+            upper = rel_pcontrib[:, i, j]
+            axes[i, 1].fill_between(freqs, under, upper)
         axes[i, 0].set_xscale("log")
         axes[i, 1].set_xscale("log")
         axes[i, 1].set_ylim(0, 1)

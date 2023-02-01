@@ -12,7 +12,7 @@ class VARAnalyzer:
         self.W = W
         self.P = None
 
-    def compute_cross_spectrum(self, freqs=None):
+    def compute_cross_spectra(self, freqs=None):
         if freqs is None:
             freq_edges = np.linspace(0, 0.5, 101, endpoint=True)
             freqs = (freq_edges[1:] + freq_edges[:-1]) / 2
@@ -30,9 +30,9 @@ class VARAnalyzer:
 
         return P
 
-    def _check_computation_crossspectrum(self):
+    def _check_computation_crossspectra(self):
         if self.P is None:
-            raise AttributeError("you must do 'compute_cross_spectrum'")
+            raise AttributeError("you must do 'compute_cross_spectra'")
 
     def _compute_arcoef_fourier(self, freqs):
         a0 = np.diag(np.repeat(-1, self.num_ts))
@@ -46,15 +46,15 @@ class VARAnalyzer:
         return A
 
     @property
-    def amplitude_spectrum(self):
-        self._check_computation_crossspectrum()
+    def amplitude_spectra(self):
+        self._check_computation_crossspectra()
         return np.abs(self.P)
 
     @property
     def coherency(self):
-        self._check_computation_crossspectrum()
+        self._check_computation_crossspectra()
 
-        alpha_jk = self.amplitude_spectrum**2
+        alpha_jk = self.amplitude_spectra**2
         p_jj = np.real(np.diagonal(self.P, axis1=1, axis2=2))
         p_kk = np.real(np.diagonal(self.P, axis1=1, axis2=2))
         coherency = alpha_jk / p_jj[:, :, None] / p_kk[:, None, :]
@@ -62,8 +62,12 @@ class VARAnalyzer:
         return coherency
 
     @property
-    def decomposed_powerspectrum(self):
-        self._check_computation_crossspectrum()
+    def cross_spectra(self):
+        return self.P
+
+    @property
+    def decomposed_powerspectra(self):
+        self._check_computation_crossspectra()
 
         W = self.W
         B = np.linalg.inv(self.A)
@@ -72,24 +76,24 @@ class VARAnalyzer:
 
     @property
     def frequency(self):
-        self._check_computation_crossspectrum()
+        self._check_computation_crossspectra()
         return self.freqs
 
     @property
     def relative_power_contribution(self):
-        self._check_computation_crossspectrum()
-        decomp_pspec = self.decomposed_powerspectrum
+        self._check_computation_crossspectra()
+        decomp_pspec = self.decomposed_powerspectra
         rel_pcontrib = np.cumsum(decomp_pspec, axis=2)
-        rel_pcontrib = rel_pcontrib / self.power_spectrum[:, :, None]
+        rel_pcontrib = rel_pcontrib / self.power_spectra[:, :, None]
         return rel_pcontrib
 
     @property
-    def phase_spectrum(self):
-        self._check_computation_crossspectrum()
+    def phase_spectra(self):
+        self._check_computation_crossspectra()
         return np.angle(self.P)
 
     @property
-    def power_spectrum(self):
-        self._check_computation_crossspectrum()
-        power_spectra = self.decomposed_powerspectrum.sum(axis=2)
+    def power_spectra(self):
+        self._check_computation_crossspectra()
+        power_spectra = self.decomposed_powerspectra.sum(axis=2)
         return power_spectra
