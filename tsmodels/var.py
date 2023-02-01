@@ -84,7 +84,7 @@ class VARAnalyzer:
         self._check_computation_crossspectra()
         decomp_pspec = self.decomposed_powerspectra
         rel_pcontrib = np.cumsum(decomp_pspec, axis=2)
-        rel_pcontrib = rel_pcontrib / self.power_spectra[:, :, None]
+        rel_pcontrib = rel_pcontrib / decomp_pspec.sum(axis=2)[:, :, None]
         return rel_pcontrib
 
     @property
