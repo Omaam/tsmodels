@@ -29,14 +29,17 @@ def example():
     for i in range(num_ts):
         for j in range(num_ts):
             # axes[i, j].set_xscale("log")
+            axes[i, j].set_xlim(0.0, 0.5)
             if i > j:
                 axes[i, j].plot(freqs, phase_spectra[:, i, j])
+                axes[i, j].set_ylim(-4, 4)
             elif i == j:
                 axes[i, j].plot(freqs, power_spectra[:, i])
                 axes[i, j].set_ylim(0.1, 100)
                 axes[i, j].set_yscale("log")
             else:
                 axes[i, j].plot(freqs, amp_spectra[:, i, j])
+                axes[i, j].set_ylim(1e-4, 1e2)
                 axes[i, j].set_yscale("log")
     plt.tight_layout()
     plt.show()
@@ -46,6 +49,7 @@ def example():
     fig, axes = plt.subplots(num_ts, num_ts, sharex=True)
     for i in range(num_ts):
         for j in range(num_ts):
+            axes[i, j].set_xlim(0.0, 0.5)
             if i < j:
                 axes[i, j].plot(freqs, coh[:, i, j])
                 if i != j:

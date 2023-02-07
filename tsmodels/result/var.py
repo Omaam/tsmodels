@@ -13,19 +13,17 @@ class VARAnalyzer:
         self.P = None
 
     def compute_cross_spectra(self, num_freqs=None):
-        num_freqs = 201 if num_freqs is None else num_freqs
 
+        num_freqs = 201 if num_freqs is None else num_freqs
         freq_edges = np.linspace(0, 0.5, num_freqs, endpoint=True)
         freqs = (freq_edges[1:] + freq_edges[:-1]) / 2
 
         A = self._compute_arcoef_fourier(freqs)
         B = np.linalg.inv(A)
-        arcoef_fourier_inv_conjugate = np.conjugate(np.transpose(
-            B, axes=[0, 2, 1]))
+        B_H = np.conjugate(np.transpose(B, axes=[0, 2, 1]))
+        W = self.W
 
-        P = B
-        P = B @ self.W
-        P = P @ arcoef_fourier_inv_conjugate
+        P = B @ W @ B_H
 
         self.num_freqs = num_freqs
         self.freqs = freqs = freqs
@@ -58,8 +56,8 @@ class VARAnalyzer:
         self._check_computation_crossspectra()
 
         alpha_jk = self.amplitude_spectra**2
-        p_jj = np.real(np.diagonal(self.P, axis1=1, axis2=2))
-        p_kk = np.real(np.diagonal(self.P, axis1=1, axis2=2))
+        p_jj = np.real(np.diagonal(self.cross_spectra, axis1=1, axis2=2))
+        p_kk = np.real(np.diagonal(self.cross_spectra, axis1=1, axis2=2))
         coherency = alpha_jk / p_jj[:, :, None] / p_kk[:, None, :]
 
         return coherency
@@ -94,7 +92,7 @@ class VARAnalyzer:
     @property
     def phase_spectra(self):
         self._check_computation_crossspectra()
-        return np.angle(self.P)
+        return np.angle(self.cross_spectra)
 
     @property
     def power_spectra(self):
