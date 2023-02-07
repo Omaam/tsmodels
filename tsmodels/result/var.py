@@ -12,11 +12,11 @@ class VARAnalyzer:
         self.W = W
         self.P = None
 
-    def compute_cross_spectra(self, freqs=None):
-        if freqs is None:
-            freq_edges = np.linspace(0, 0.5, 101, endpoint=True)
-            freqs = (freq_edges[1:] + freq_edges[:-1]) / 2
-        self.freqs = freqs = np.asarray(freqs)
+    def compute_cross_spectra(self, num_freqs=None):
+        num_freqs = 201 if num_freqs is None else num_freqs
+
+        freq_edges = np.linspace(0, 0.5, num_freqs, endpoint=True)
+        freqs = (freq_edges[1:] + freq_edges[:-1]) / 2
 
         A = self._compute_arcoef_fourier(freqs)
         B = np.linalg.inv(A)
@@ -26,6 +26,9 @@ class VARAnalyzer:
         P = B
         P = B @ self.W
         P = P @ arcoef_fourier_inv_conjugate
+
+        self.num_freqs = num_freqs
+        self.freqs = freqs = freqs
         self.P = P
 
         return P
@@ -71,7 +74,9 @@ class VARAnalyzer:
 
         W = self.W
         B = np.linalg.inv(self.A)
-        decomp_pspec = np.abs(B)**2 * np.diag(W)**2
+
+        decomp_pspec = np.abs(B)**2 * np.diag(np.abs(W))
+        decomp_pspec = np.cumsum(decomp_pspec, axis=2)
         return decomp_pspec
 
     @property
@@ -83,8 +88,7 @@ class VARAnalyzer:
     def relative_power_contribution(self):
         self._check_computation_crossspectra()
         decomp_pspec = self.decomposed_powerspectra
-        rel_pcontrib = np.cumsum(decomp_pspec, axis=2)
-        rel_pcontrib = rel_pcontrib / decomp_pspec.sum(axis=2)[:, :, None]
+        rel_pcontrib = decomp_pspec / decomp_pspec[:, :, -1][:, :, None]
         return rel_pcontrib
 
     @property

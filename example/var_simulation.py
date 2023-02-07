@@ -5,7 +5,7 @@ import matplotlib.pyplot as plt
 import numpy as np
 
 
-from tsmodels import VARAnalyzer
+from tsmodels.result import var
 
 
 def example():
@@ -14,10 +14,10 @@ def example():
         [[[0.4, 0.4],
           [0.1, 0.4]]]
     )
-    sigma2 = [0.1, 0.1]
+    sigma2 = np.diag([0.1, 0.1])
 
-    varprocess = VARProcess(arcoef, None, np.diag(sigma2))
-    ts_sim = varprocess.simulate_var(100)
+    var_process = VARProcess(arcoef, None, sigma2)
+    ts_sim = var_process.simulate_var(100)
     fig, ax = plt.subplots(2, sharex="col", figsize=(8, 5))
     ax[0].plot(ts_sim[:, 0])
     ax[1].plot(ts_sim[:, 1])
@@ -25,12 +25,12 @@ def example():
     # plt.show()
     plt.close()
 
-    var = VARAnalyzer(arcoef, np.diag(sigma2))
-    var.compute_cross_spectra()
+    var_res = var.VARAnalyzer(arcoef, sigma2)
+    var_res.compute_cross_spectra()
 
-    freqs = var.freqs
-    amp_specs = var.amplitude_spectra
-    phase_specs = var.phase_spectra
+    freqs = var_res.freqs
+    amp_specs = var_res.amplitude_spectra
+    phase_specs = var_res.phase_spectra
 
     num_ts = 2
     fig, axes = plt.subplots(num_ts, num_ts, sharex=True)
@@ -45,7 +45,7 @@ def example():
     # plt.show()
     plt.close()
 
-    coh = var.coherency
+    coh = var_res.coherency
     fig, axes = plt.subplots(num_ts, num_ts, sharex=True)
     for i in range(num_ts):
         for j in range(num_ts):
@@ -60,8 +60,8 @@ def example():
     # plt.show()
     plt.close()
 
-    decomp_pspec = var.decomposed_powerspectra
-    rel_pcontrib = var.relative_power_contribution
+    decomp_pspec = var_res.decomposed_powerspectra
+    rel_pcontrib = var_res.relative_power_contribution
     fig, axes = plt.subplots(num_ts, 2, sharex=True)
     for i in range(num_ts):
         for j in range(num_ts):
