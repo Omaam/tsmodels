@@ -4,7 +4,7 @@ import unittest
 
 import numpy as np
 
-import model
+import tsmodels
 
 
 class TestARModel(unittest.TestCase):
@@ -12,7 +12,9 @@ class TestARModel(unittest.TestCase):
     def test_compute_impulse_response_function(self, num_lags=50):
 
         ar_coef = [0.3, 0.2, 0.1]
-        armodel = model.ARModel(ar_coef)
+        variance = 0.1
+
+        armodel = tsmodels.result.ArAnalyzer(ar_coef, variance)
 
         expect = self._compute_irf_manual(ar_coef)
         actual = armodel.compute_impulse_response_function()

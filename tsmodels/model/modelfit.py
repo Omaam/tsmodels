@@ -3,7 +3,7 @@
 from numpy.typing import ArrayLike
 import numpy as np
 
-import util
+from tsmodels import util
 
 
 def fit_armodel(x: ArrayLike, arorder: int):

@@ -3,21 +3,17 @@
 import numpy as np
 
 
-class VARAnalyzer:
+class VarAnalyzer:
     def __init__(self, arcoef, W):
         self.arcoef = np.array(arcoef)
         self.arorder = arcoef.shape[0]
-        self.num_ts = arcoef.shape[1]
+        self.num_series = arcoef.shape[1]
 
         self.W = W
         self.P = None
 
-    def compute_cross_spectra(self, num_freqs=None):
-
-        num_freqs = 201 if num_freqs is None else num_freqs
-        freq_edges = np.linspace(0, 0.5, num_freqs, endpoint=True)
-        freqs = (freq_edges[1:] + freq_edges[:-1]) / 2
-
+    def compute_crossspectra(self, num_freqs=None):
+        freqs = self._generate_frequency(num_freqs)
         A = self._compute_arcoef_fourier(freqs)
         B = np.linalg.inv(A)
         B_H = np.conjugate(np.transpose(B, axes=[0, 2, 1]))
@@ -33,18 +29,24 @@ class VARAnalyzer:
 
     def _check_computation_crossspectra(self):
         if self.P is None:
-            raise AttributeError("you must do 'compute_cross_spectra'")
+            raise AttributeError("you must do 'compute_crossspectra'")
 
     def _compute_arcoef_fourier(self, freqs):
-        a0 = np.diag(np.repeat(-1, self.num_ts))
-        arcoef_a0 = np.insert(self.arcoef, 0, a0, axis=0)
+        a0 = np.diag(np.repeat(-1, self.num_series))
+        arcoef = np.insert(self.arcoef, 0, a0, axis=0)
 
         phases = -2j * np.pi * freqs[:, None] * np.arange(self.arorder + 1)
-        A = arcoef_a0 * np.exp(phases)[:, :, None, None]
+        A = arcoef * np.exp(phases)[:, :, None, None]
         A = A.sum(axis=1)
 
         self.A = A
         return A
+
+    def _generate_frequency(self, num_freqs=None):
+        num_freqs = 201 if num_freqs is None else num_freqs
+        freq_edges = np.linspace(0, 0.5, num_freqs, endpoint=True)
+        freqs = (freq_edges[1:] + freq_edges[:-1]) / 2
+        return freqs
 
     @property
     def amplitude_spectra(self):

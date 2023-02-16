@@ -4,7 +4,7 @@ from numpy.typing import ArrayLike
 import numpy as np
 
 
-class ARModel:
+class ArAnalyzer:
     """AR model class.
     Attribute:
         * ar_coef: ArrayLike
