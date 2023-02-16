@@ -100,5 +100,5 @@ class VarAnalyzer:
     @property
     def power_spectra(self):
         self._check_computation_crossspectra()
-        power_spectra = np.diagonal(self.cross_spectra, axis1=1, axis2=2)
+        power_spectra = np.diagonal(self.cross_spectra, axis1=1, axis2=2).real
         return power_spectra
