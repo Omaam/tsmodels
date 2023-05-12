@@ -14,7 +14,7 @@ def generate_random_arcoef(num_series, arorder):
 
 
 def compute_arcoef_fourier(arcoef, freqs):
-    """Compute AR coefficients by iteration.
+    """Compute AR coefficients with iteration.
     """
     arorder, num_series, _ = arcoef.shape
 
