@@ -42,13 +42,16 @@ class StateSpaceModel():
         self.observation_noise_cov = observation_noise_cov
 
     def sample(self, num_timesteps: int,
-               initial_latent_state: ArrayLike = None):
+               initial_latent_state: ArrayLike = None,
+               seed=None):
         """Sample series.
 
         Args:
             num_timesteps (int): Number of iterations.
             init_state (ArrayLike, optional): Initial state.
         """
+        np.random.seed(seed)
+
         latents = np.zeros((num_timesteps, self.latent_size))
         observations = np.zeros((num_timesteps, self.observation_size))
 
