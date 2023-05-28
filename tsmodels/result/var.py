@@ -27,6 +27,47 @@ class VarAnalyzer:
 
         return P
 
+    def compute_impulse_response(self, num_lagsteps, orthogonal=False):
+        """Compute impulse response function.
+
+        Args:
+            num_lagsteps (int): number of lagsteps to compute
+                impulse responses.
+
+        Return:
+            impulse_response: impulse responses.
+        """
+        impulse_response = self._compute_impulse_response(
+            num_lagsteps, orthogonal)
+        return impulse_response
+
+    def _compute_impulse_response(self, num_lagsteps, orthogonal):
+        order = self.arorder
+        coefs = self.arcoef
+        noise_cov = self.W
+        num_series = self.num_series
+
+        A = np.concatenate(coefs, axis=-1)
+
+        # First (order)-th `irf` is prepared just for computational
+        # convenience. These will not be used for returning `irf`.
+        _irf = np.zeros((num_lagsteps+order, num_series, num_series))
+
+        if orthogonal:
+            init_impulse = np.linalg.cholesky(noise_cov)
+            np.fill_diagonal(init_impulse, 1.)
+        else:
+            init_impulse = np.diag(np.ones(num_series))
+        _irf[order] = init_impulse
+
+        for i in range(order + 1, num_lagsteps+order, 1):
+            target_irf = _irf[i-order:i]
+            G_s = np.concatenate(target_irf[::-1], axis=-1)
+            g = np.transpose(A @ np.transpose(G_s))
+            _irf[i] = g
+        irf = _irf[order:]
+        return irf
+
     def _check_computation_crossspectra(self):
         if self.P is None:
             raise AttributeError("you must do 'compute_crossspectra'")
