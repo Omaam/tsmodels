@@ -27,7 +27,8 @@ class VarAnalyzer:
 
         return P
 
-    def compute_impulse_response(self, num_lagsteps, orthogonal=False):
+    def compute_impulse_response(self, num_lagsteps, orthogonal=False,
+                                 unit_impulse=True):
         """Compute impulse response function.
 
         Args:
@@ -38,28 +39,31 @@ class VarAnalyzer:
             impulse_response: impulse responses.
         """
         impulse_response = self._compute_impulse_response(
-            num_lagsteps, orthogonal)
+            num_lagsteps, orthogonal, unit_impulse)
         return impulse_response
 
-    def _compute_impulse_response(self, num_lagsteps, orthogonal):
+    def _compute_impulse_response(self, num_lagsteps, orthogonal,
+                                  unit_impulse):
         order = self.arorder
         coefs = self.arcoef
         noise_cov = self.W
         num_series = self.num_series
 
-        A = np.concatenate(coefs, axis=-1)
+        if orthogonal:
+            init_impulse = np.linalg.cholesky(noise_cov)
+        else:
+            init_impulse = np.zeros((num_series, num_series)) + np.diag(
+                noise_cov)
+
+        if unit_impulse:
+            init_impulse /= np.diag(init_impulse)
 
         # First (order)-th `irf` is prepared just for computational
         # convenience. These will not be used for returning `irf`.
         _irf = np.zeros((num_lagsteps+order, num_series, num_series))
-
-        if orthogonal:
-            init_impulse = np.linalg.cholesky(noise_cov)
-            np.fill_diagonal(init_impulse, 1.)
-        else:
-            init_impulse = np.diag(np.ones(num_series))
         _irf[order] = init_impulse
 
+        A = np.concatenate(coefs, axis=-1)
         for i in range(order + 1, num_lagsteps+order, 1):
             target_irf = _irf[i-order:i]
             G_s = np.concatenate(target_irf[::-1], axis=-1)
